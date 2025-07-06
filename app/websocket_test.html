@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>WebSocket Test</title>
+  <style>
+    body { background: #111; color: white; padding: 2rem; font-family: sans-serif; }
+    input, button { padding: 0.5rem; margin-right: 0.5rem; }
+    #chat { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h2>🧩 <b>WebSocket Подключение</b></h2>
+  <input type="text" id="messageInput" placeholder="Введите сообщение..." />
+  <button onclick="sendMessage()">Отправить</button>
+  <div id="chat"></div>
+
+  <script>
+    const socket = new WebSocket(`ws://${location.hostname}:8000/ws`);
+
+    const chat = document.getElementById("chat");
+
+    socket.onopen = () => {
+      chat.innerHTML += "<p style='color:lightgreen'>✅ Соединение установлено</p>";
+    };
+
+    socket.onmessage = (event) => {
+      chat.innerHTML += `<p>📩 ${event.data}</p>`;
+    };
+
+    socket.onclose = () => {
+      chat.innerHTML += "<p style='color:red'>❌ Соединение закрыто</p>";
+    };
+
+    function sendMessage() {
+      const input = document.getElementById("messageInput");
+      if (input.value.trim() !== "") {
+        socket.send(input.value);
+        input.value = "";
+      }
+    }
+  </script>
+</body>
+</html>
