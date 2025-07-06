@@ -13,3 +13,4 @@ websockets
 celery
 redis>=4.5.5
 pydantic-settings
+pytest
