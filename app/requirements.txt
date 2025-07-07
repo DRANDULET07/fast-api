@@ -2,8 +2,6 @@ fastapi
 uvicorn[standard]
 sqlmodel
 asyncpg
-psycopg2-binary
-
 
 python-jose
 passlib[bcrypt]
@@ -11,7 +9,6 @@ python-dotenv
 python-multipart
 websockets
 
-# Для Celery и Redis
 celery
 redis>=4.5.5
 pydantic-settings
