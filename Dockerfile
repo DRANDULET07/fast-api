@@ -7,6 +7,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./app/ .
 COPY wait_for_db.py ./wait_for_db.py
-# COPY prometheus.yml /etc/prometheus/prometheus.yml  # опционально
 
-CMD ["sh", "-c", "python wait_for_db.py && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
+# Используем переменную PORT, которую задаёт Render
+CMD ["sh", "-c", "python wait_for_db.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT"]

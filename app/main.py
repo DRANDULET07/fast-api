@@ -7,6 +7,7 @@ import json
 import logging
 import time
 import traceback
+import os
 
 from prometheus_fastapi_instrumentator import Instrumentator
 
@@ -21,7 +22,6 @@ app = FastAPI(
     description="FastAPI-приложение для создания, хранения и отображения заметок с использованием Redis, Celery, Prometheus и ограничения по частоте запросов.",
     version="1.0.0"
 )
-
 
 # Middleware для ограничения частоты запросов
 app.add_middleware(RateLimiterMiddleware)
@@ -95,12 +95,8 @@ async def on_startup():
     description="Возвращает кэшированный или свежий список всех заметок из базы данных.",
     tags=["Заметки"],
     responses={
-        200: {
-            "description": "Успешный ответ со списком заметок",
-        },
-        500: {
-            "description": "Внутренняя ошибка сервера"
-        }
+        200: {"description": "Успешный ответ со списком заметок"},
+        500: {"description": "Внутренняя ошибка сервера"},
     }
 )
 async def get_notes(session: AsyncSession = Depends(async_session)):
@@ -113,17 +109,33 @@ async def get_notes(session: AsyncSession = Depends(async_session)):
     await redis_client.set(cache_key, json.dumps([note.model_dump() for note in notes]), ex=60)
     return notes
 
-
-@app.post("/notes", response_model=schemas.NoteOut)
+@app.post(
+    "/notes",
+    response_model=schemas.NoteOut,
+    summary="Добавить новую заметку",
+    tags=["Заметки"],
+    responses={
+        201: {"description": "Заметка успешно создана"},
+        400: {"description": "Неверные данные"},
+    }
+)
 async def add_note(note: schemas.NoteCreate, session: AsyncSession = Depends(async_session)):
     new_note = await crud.create_note(session, note)
     await app.state.redis.delete("notes_cache")
     return new_note
 
-@app.get("/send-email/")
+@app.get(
+    "/send-email/",
+    summary="Отправить email через Celery",
+    description="Добавляет задачу отправки письма в очередь Celery",
+    tags=["Почта"]
+)
 async def trigger_email(email: str):
     task = send_email.delay(email)
-    return {"message": f"Задача на отправку письма на {email} отправлена в очередь", "task_id": task.id}
+    return {
+        "message": f"Задача на отправку письма на {email} отправлена в очередь",
+        "task_id": task.id
+    }
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -136,7 +148,39 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
         await manager.broadcast("❌ Кто-то отключился")
 
-@app.get("/test", response_class=HTMLResponse)
+@app.get("/test", response_class=HTMLResponse, include_in_schema=False)
 async def websocket_test_page():
-    html_content = """ ... (оставь HTML без изменений) ... """
+    html_content = """
+    <html>
+        <head>
+            <title>WebSocket Чат</title>
+        </head>
+        <body>
+            <h1>Простой WebSocket чат</h1>
+            <input id="messageInput" type="text" placeholder="Введите сообщение..."/>
+            <button onclick="sendMessage()">Отправить</button>
+            <ul id="messages"></ul>
+            <script>
+                const ws = new WebSocket(`wss://${window.location.host}/ws`);
+                ws.onmessage = (event) => {
+                    const messages = document.getElementById('messages');
+                    const message = document.createElement('li');
+                    message.textContent = event.data;
+                    messages.appendChild(message);
+                };
+                function sendMessage() {
+                    const input = document.getElementById("messageInput");
+                    ws.send(input.value);
+                    input.value = '';
+                }
+            </script>
+        </body>
+    </html>
+    """
     return HTMLResponse(content=html_content)
+
+# ⬇️ Для Render: автоматический запуск через порт
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
