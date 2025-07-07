@@ -1,27 +1,19 @@
 import time
 import psycopg2
 from psycopg2 import OperationalError
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
 
 load_dotenv()
 
-DB_NAME = os.getenv("POSTGRES_DB")
-DB_USER = os.getenv("POSTGRES_USER")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
+DATABASE_URL = os.getenv("PSYCOPG2_DATABASE_URL")  # Новый URL только для psycopg2
 
 MAX_RETRIES = 30
 retries = 0
 
 while retries < MAX_RETRIES:
     try:
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST
-        )
+        conn = psycopg2.connect(DATABASE_URL)
         conn.close()
         print("✅ Database is ready!")
         break
