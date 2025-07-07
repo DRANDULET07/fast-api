@@ -16,6 +16,7 @@ from app import crud, models, schemas
 from app.database import async_session, init_db
 from app.tasks import send_email
 from app.middleware.rate_limiter import RateLimiterMiddleware
+from app.config import settings  # ⬅️ добавлено
 
 app = FastAPI(
     title="📓 Сервис Заметок",
@@ -78,7 +79,7 @@ async def health_check():
 async def on_startup():
     await init_db()
     try:
-        app.state.redis = redis.Redis(host="redis", port=6379, decode_responses=True)
+        app.state.redis = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
         await app.state.redis.ping()
         logger.info("✅ Redis connected successfully")
     except Exception as e:
