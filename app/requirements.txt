@@ -2,8 +2,6 @@ fastapi
 uvicorn[standard]
 sqlmodel
 asyncpg
-psycopg2  # <--- добавь ЭТО
-# psycopg2-binary (можно удалить, если не используешь напрямую)
 
 python-jose
 passlib[bcrypt]
