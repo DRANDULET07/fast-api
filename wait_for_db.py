@@ -2,11 +2,9 @@ import time
 import psycopg2
 from psycopg2 import OperationalError
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-DATABASE_URL = os.getenv("PSYCOPG2_DATABASE_URL")  # Новый URL только для psycopg2
+# Получаем URL напрямую из переменной окружения (без load_dotenv)
+DATABASE_URL = os.environ.get("PSYCOPG2_DATABASE_URL")
 
 MAX_RETRIES = 30
 retries = 0
