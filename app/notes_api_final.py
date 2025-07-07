@@ -65,8 +65,8 @@ class NoteOut(BaseModel):
     content: str
 
 # DB table creation
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
+# def create_db_and_tables():
+#     SQLModel.metadata.create_all(engine)
 
 # DB session dependency
 def get_session():

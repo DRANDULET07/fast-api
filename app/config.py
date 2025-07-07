@@ -10,4 +10,7 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
 
+    RATE_LIMIT_REQUESTS: int = 5
+    RATE_LIMIT_SECONDS: int = 60
+
 settings = Settings()
