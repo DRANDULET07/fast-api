@@ -9,13 +9,13 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# Копируем requirements.txt из папки app и устанавливаем зависимости
 COPY ./app/requirements.txt ./requirements.txt
-
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./app/ .  # копируем все файлы из папки app
-
+# Копируем всё из папки app/ и корневой wait_for_db.py
+COPY ./app/ ./app/
 COPY wait_for_db.py ./wait_for_db.py
 
-# Запускаем сервер (без app. в пути к модулю)
-CMD ["sh", "-c", "python wait_for_db.py && uvicorn main:app --host 0.0.0.0 --port $PORT"]
+# Запуск: ждем БД, затем запускаем Uvicorn с app.main:app
+CMD ["sh", "-c", "python wait_for_db.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT"]
