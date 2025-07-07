@@ -181,7 +181,9 @@ async def websocket_test_page():
     return HTMLResponse(content=html_content)
 
 # ⬇️ Для Render: автоматический запуск через порт
+import os
+
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+
